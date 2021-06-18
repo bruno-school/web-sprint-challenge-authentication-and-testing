@@ -1,15 +1,35 @@
-const newAccount = (req, res, next) => {
+const db = require('../../data/dbConfig')
+const {hash} = require('../../utils/hash')
+const bcrypt = require('bcrypt')
+const newAccount = async (req, res, next) => {
 	const {username, password} = req.body
-	// 1- In order to register a new account the client must provide `username` and `password`:
-	//   {
-	//     "username": "Captain Marvel", // must not exist already in the `users` table
-	//     "password": "foobar"          // needs to be hashed before it's saved
-	//   }
 
 	if (!username || !password) {
-		next({status: 400, message: 'Username and Password are required...'})
+		next({status: 400, message: 'username and password required'})
 	}
-	next()
+
+	try {
+		const userExist = await db('users')
+			.where('username', req.body.username.trim())
+			.first()
+
+		if (userExist) {
+			next({status: 400, message: 'username taken'})
+		} else {
+			const salt = await bcrypt.genSalt(8)
+			const hashPassword = await bcrypt.hash(password, salt)
+			const newUser = {
+				username: username.trim(),
+				password: hashPassword,
+			}
+
+			req.user = newUser
+
+			next()
+		}
+	} catch (error) {
+		next()
+	}
 }
 
 module.exports = newAccount
