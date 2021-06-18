@@ -1,5 +1,11 @@
 const db = require('../../data/dbConfig')
 
-const createsJokes = () => {}
+const getJokes = () => {
+	return db('jokes')
+}
+const createsJokes = async (data) => {
+	const [id] = await db('jokes').insert(data)
+	return await db('jokes').where('id', id).first()
+}
 
-module.exports
+module.exports = {getJokes, createsJokes}

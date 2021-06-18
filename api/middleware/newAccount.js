@@ -23,9 +23,6 @@ const newAccount = async (req, res, next) => {
 		if (userExist) {
 			next({status: 400, message: 'username taken'})
 		} else {
-			// const salt = await bcrypt.genSalt(8)
-			// const hashPassword = await bcrypt.hash(password, salt)
-
 			const hashPass = await hash(password)
 			const newUser = {
 				username: username.trim(),
@@ -53,12 +50,11 @@ const validateUser = async (req, res, next) => {
 		if (!user) {
 			next({status: 401, message: 'Invalid credentials'})
 		} else {
-			console.log(user)
 			const validadtePassword = bcrypt.compareSync(
 				password,
 				user.password
 			)
-			console.log(validadtePassword)
+
 			if (validadtePassword) {
 				req.user = user
 				next()
@@ -69,7 +65,6 @@ const validateUser = async (req, res, next) => {
 	} catch (error) {
 		next(error)
 	}
-	next()
 }
 
 module.exports = {newAccount, validateUser}
